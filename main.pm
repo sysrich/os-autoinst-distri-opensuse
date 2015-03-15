@@ -431,6 +431,9 @@ sub load_consoletests() {
         loadtest "console/sle11_consoletest_setup.pm";
         loadtest "console/textinfo.pm";
         loadtest "console/hostname.pm";
+        if (check_var("FILESYSTEM","btrfs") && (get_var("HDDSIZEGB") >= 20)) {
+            loadtest "console/snapper.pm";
+        }
         if (get_var("DESKTOP") !~ /textmode/) {
             loadtest "console/xorg_vt.pm";
         }
