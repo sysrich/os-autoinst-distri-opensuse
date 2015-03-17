@@ -82,8 +82,8 @@ sub cleanup_needles() {
     remove_desktop_needles("minimalx");
     remove_desktop_needles("textmode");
 
-    remove_flavor_needles('Server-DVD');
-    remove_flavor_needles('Desktop-DVD');
+    remove_flavor_needles('Server-DVD') if ( !check_var( 'FLAVOR', 'Server-MINI' ) );
+    remove_flavor_needles('Desktop-DVD') if ( !check_var( 'FLAVOR', 'Desktop-MINI') );
     remove_flavor_needles('Core-DVD');
 
     if ( !get_var("LIVECD") ) {
@@ -148,7 +148,7 @@ set_var('OLD_IFCONFIG', 1);
 set_var('DM_NEEDS_USERNAME', 1);
 set_var('NOIMAGES', 1);
 
-if ( check_var('FLAVOR', 'Desktop-DVD') ) {
+if ( check_var('FLAVOR', 'Desktop-DVD') || check_var('FLAVOR', 'Desktop-MINI') ) {
     # now that's fun - if AUTOCONF is set, autoconf is disabled
     set_var('AUTOCONF', 1);
 }
@@ -326,7 +326,9 @@ sub is_reboot_after_installation_necessary() {
 
 sub load_inst_tests() {
     loadtest "installation/welcome.pm";
-    loadtest "installation/check_medium.pm";
+    if (!get_var('NETBOOT')) {
+        loadtest "installation/check_medium.pm";
+    }
     loadtest "installation/installation_mode.pm";
     if (!get_var('LIVECD') && get_var('UPGRADE') ) {
         loadtest "installation/upgrade_select_sle11.pm";
@@ -338,10 +340,10 @@ sub load_inst_tests() {
         }
 
         loadtest "installation/installer_timezone.pm";
-        if (check_var('FLAVOR', 'Server-DVD') && !get_var("OFW")) {
+        if (check_var('FLAVOR', 'Server-DVD') || check_var('FLAVOR', 'Server-MINI') && !get_var("OFW")) {
             loadtest "installation/server_base_scenario.pm";
         }
-        if (check_var('FLAVOR', 'Desktop-DVD')) {
+        if (check_var('FLAVOR', 'Desktop-DVD') || check_var('FLAVOR', 'Desktop-MINI')) {
             loadtest "installation/user_settings.pm";
             loadtest "installation/user_settings_root.pm";
         }
@@ -379,12 +381,12 @@ sub load_inst_tests() {
             loadtest "installation/proxy_start_2nd_stage.pm";
     }
     loadtest "installation/sle11_wait_for_2nd_stage.pm";
-    if (noupdatestep_is_applicable && check_var('FLAVOR', 'Server-DVD')) {
+    if (noupdatestep_is_applicable && check_var('FLAVOR', 'Server-DVD') || check_var('FLAVOR', 'Server-MINI')) {
         loadtest "installation/user_settings_root.pm";
     }
     loadtest "installation/sle11_network.pm";
     loadtest "installation/sle11_ncc.pm";
-    if (noupdatestep_is_applicable && check_var('FLAVOR', 'Server-DVD')) {
+    if (noupdatestep_is_applicable && check_var('FLAVOR', 'Server-DVD') || check_var('FLAVOR', 'Server-MINI')) {
         loadtest "installation/sle11_service.pm";
         loadtest "installation/sle11_user_authentication_method.pm";
         loadtest "installation/user_settings.pm";
@@ -504,7 +506,7 @@ sub load_x11tests(){
     if (xfcestep_is_applicable) {
         loadtest "x11/ristretto.pm";
     }
-    if ( !check_var('FLAVOR', 'Server-DVD') ) {
+    if ( !(check_var('FLAVOR', 'Server-DVD') || check_var('FLAVOR', 'Server-MINI')) ) {
         if (gnomestep_is_applicable) {
             loadtest "x11/eog.pm";
             loadtest "x11/banshee.pm";
@@ -536,7 +538,7 @@ sub load_x11tests(){
     }
     if (gnomestep_is_applicable) {
         loadtest "x11/nautilus.pm" unless get_var("LIVECD");
-        loadtest "x11/evolution.pm" unless (check_var("FLAVOR", "Server-DVD"));
+        loadtest "x11/evolution.pm" unless (check_var("FLAVOR", "Server-DVD") || check_var('FLAVOR', 'Server-MINI'));
         loadtest "x11/reboot_gnome_pre_sle11.pm";
     }
     if (!get_var("LIVETEST")) {
