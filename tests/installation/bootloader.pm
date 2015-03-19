@@ -72,8 +72,27 @@ sub run() {
     if ( get_var("NETBOOT") ) {
         send_key "f4";
         assert_screen "inst-instsourcemenu", 4;
-        send_key "ret";
-        assert_screen "inst-instsourcedialog", 4;
+
+        # Select a source of net installation
+        my $version = $1 if ( get_var("VERSION") =~ /^(\d+)/ );
+        if ($version == 11) {
+            if ( get_var("HTTP_INSTALL") ) {
+                select_source("down", 2);
+                assert_screen "inst-instsourcedialog", 4;
+            } elsif ( get_var("FTP_INSTALL") ) {
+                select_source("down", 1);
+                assert_screen "inst-instsourcedialog", 4;
+            } elsif ( get_var("NFS_INSTALL") ) {
+                select_source("down", 3);
+                assert_screen "inst-instsourcedialog", 4;
+            } elsif ( get_var("SMB_INSTALL") ) {
+                select_source("down", 4);
+                assert_screen "inst-instsourcedialog", 4;
+            }
+        } elsif ($version == 12) {
+            #todo
+        }
+
         my $mirroraddr = "";
         my $mirrorpath = "/factory";
         if ( get_var("SUSEMIRROR", '') =~ m{^([a-zA-Z0-9.-]*)(/.*)$} ){
@@ -87,6 +106,13 @@ sub run() {
         }
         send_key "tab";
 
+        # smb share dir
+        if ( get_var("SMB_INSTALL") ) {
+            for ( 1 .. 10 ) { send_key "backspace" }
+            type_string  get_var("SHARE_NAME");
+            send_key "tab";
+        }
+
         # change dir
         # leave /repo/oss/ (10 chars)
         if ( get_var("FULLURL") ) {
@@ -96,10 +122,13 @@ sub run() {
             for ( 1 .. 10 ) { send_key "left"; }
         }
         for ( 1 .. 22 ) { send_key "backspace"; }
+        # nfs direetory prefix
+        $mirrorpath = get_var("DIR_PREFIX").$mirrorpath if ( get_var("NFS_INSTALL") && get_var("DIR_PREFIX") );
         type_string $mirrorpath;
 
-        assert_screen "inst-mirror_is_setup", 2;
+        #confirm selected source
         send_key "ret";
+        assert_screen "inst-mirror_is_setup", 4;
 
         # HTTP-proxy
         if ( get_var("HTTPPROXY", '') =~ m/([0-9.]+):(\d+)/ ) {
@@ -222,6 +251,14 @@ sub run() {
     }
 
     # boot
+    send_key "ret";
+}
+
+sub select_source ($$) {
+    my ($direction, $n) = @_;
+    for (1 .. $n) {
+        send_key $direction;
+    }
     send_key "ret";
 }
 
