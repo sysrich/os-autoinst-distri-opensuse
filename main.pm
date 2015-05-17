@@ -405,6 +405,9 @@ sub load_inst_tests() {
     }
     loadtest "installation/sle11_network.pm";
     loadtest "installation/sle11_ncc.pm";
+    if (get_var('NCC')) {
+        loadtest "installation/sle11_online_update.pm";
+    }
     if (noupdatestep_is_applicable && check_var('FLAVOR', 'Server-DVD')) {
         loadtest "installation/sle11_service.pm";
         loadtest "installation/sle11_user_authentication_method.pm";
@@ -602,6 +605,10 @@ sub load_autoyast_tests(){
     #    next boot in load_reboot_tests
 }
 
+sub load_ncc_tests() {
+    loadtest("ncc/ncc_checkrepos.pm");
+}
+
 # load the tests in the right order
 if ( get_var("REGRESSION") ) {
     if ( get_var("KEEPHDDS") ) {
@@ -669,6 +676,9 @@ else {
     }
     if (get_var("HAVALIDATION")) {
         load_ha_tests();
+    }
+    if (get_var('NCC')) {
+        load_ncc_tests();
     }
 }
 
