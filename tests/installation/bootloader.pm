@@ -79,8 +79,33 @@ sub run() {
     if ( get_var("NETBOOT") ) {
         send_key "f4";
         assert_screen "inst-instsourcemenu", 4;
-        send_key "ret";
-        assert_screen "inst-instsourcedialog", 4;
+
+        # Select a source of net installation for sle11
+        if ( check_var('DISTRI', "sle")) {
+            my $version = $1 if ( get_var("VERSION") =~ /^(\d+)/ );
+            if ($version == 11) {
+                if ( check_var('INSTALL_SOURCE', "http") ) {
+                    select_source("down", 2);
+                    assert_screen "inst-instsourcedialog", 4;
+                } elsif ( check_var('INSTALL_SOURCE', "ftp") ) {
+                    select_source("down", 1);
+                    assert_screen "inst-instsourcedialog", 4;
+                } elsif ( check_var('INSTALL_SOURCE', "nfs") ) {
+                    select_source("down", 3);
+                    assert_screen "inst-instsourcedialog", 4;
+                } elsif ( check_var('INSTALL_SOURCE', "smb") ) {
+                    select_source("down", 4);
+                    assert_screen "inst-instsourcedialog", 4;
+                }
+            } elsif ($version == 12) {
+                # Todo
+            }  
+        } else {
+            # for opensuse NET
+            send_key "ret";
+            assert_screen "inst-instsourcedialog", 4;
+        }
+
         my $mirroraddr = "";
         my $mirrorpath = "/factory";
         if ( get_var("SUSEMIRROR", '') =~ m{^([a-zA-Z0-9.-]*)(/.*)$} ){
@@ -94,6 +119,13 @@ sub run() {
         }
         send_key "tab";
 
+        # smb share dir
+        if ( check_var('INSTALL_SOURCE', "smb") ) {
+            for ( 1 .. 10 ) { send_key "backspace" }
+            type_string  get_var("SHARE_NAME");
+            send_key "tab";
+        }
+
         # change dir
         # leave /repo/oss/ (10 chars)
         if ( get_var("FULLURL") ) {
@@ -103,6 +135,11 @@ sub run() {
             for ( 1 .. 10 ) { send_key "left"; }
         }
         for ( 1 .. 22 ) { send_key "backspace"; }
+
+        # nfs directory prefix
+        if ( check_var('INSTALL_SOURCE', "nfs") && get_var("DIR_PREFIX") ) {
+            $mirrorpath = get_var("DIR_PREFIX").$mirrorpath;
+        }
         type_string $mirrorpath;
 
         assert_screen "inst-mirror_is_setup", 2;
@@ -230,6 +267,14 @@ sub run() {
 
 
     # boot
+    send_key "ret";
+}
+
+sub select_source ($$) {
+    my ($direction, $n) = @_;
+    for (1 .. $n) {
+        send_key $direction;
+    }
     send_key "ret";
 }
 
