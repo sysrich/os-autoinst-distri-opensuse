@@ -15,16 +15,14 @@ sub run(){
     send_key 'ret';
 
     my $emailaddr = get_var("NCC_EMAIL");
-    my $activation_code = "";
-    $activation_code = get_var("NCC_SLED_CODE") if (check_var('FLAVOR', 'Desktop-DVD'));
-    $activation_code = get_var("NCC_SLES_CODE") if (check_var('FLAVOR', 'Server-DVD'));
+    my $ncc_code = get_var("NCC_CODE");
 
     assert_screen 'ncc-input-emailaddress', 20;
     type_string $emailaddr;
     $self->key_round('ncc-confirm-emailaddress', 'tab');
     type_string $emailaddr;
     $self->key_round('ncc-input-activationcode', 'tab');
-    type_string $activation_code;
+    type_string $ncc_code;
     $self->key_round('ncc-submit', 'tab');
     send_key 'ret';
 
