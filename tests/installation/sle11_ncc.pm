@@ -26,7 +26,6 @@ sub run(){
     $self->key_round('ncc-submit', 'tab');
     send_key 'ret';
 
-    sleep 5;
     $self->key_round('ncc-continue-process', 'tab');
     send_key 'ret';
 
@@ -35,7 +34,6 @@ sub run(){
         if (check_screen('ncc-import-key', 60)) {
             send_key 'alt-i';
         }
-        sleep 5;
     }
 
     assert_screen 'ncc-configuration-done', 60;
