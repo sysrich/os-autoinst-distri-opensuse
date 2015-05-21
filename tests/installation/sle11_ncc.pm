@@ -2,6 +2,14 @@ use base "y2logsstep";
 use strict;
 use testapi;
 
+sub ncc_continue_actions() {
+    # untrusted gnupg keys may appear
+    while ( my $ret = check_screen( [qw/ncc-import-key ncc-configuration-done/], 120 )) {
+        last if $ret->{needle}->has_tag('ncc-configuration-done');
+        send_key "alt-i";   
+    }
+}
+
 sub run(){
     my $self=shift;
 
@@ -29,15 +37,8 @@ sub run(){
     $self->key_round('ncc-continue-process', 'tab');
     send_key 'ret';
 
-    # import untrusted gnupg keys for sled11 
-    for (1 .. 2) {
-        if (check_screen('ncc-import-key', 60)) {
-            send_key 'alt-i';
-        }
-    }
-
-    assert_screen 'ncc-configuration-done', 60;
-    send_key 'alt-o';
+    ncc_continue_actions();
+    send_key 'alt-o'; # done
 }
 
 1;
