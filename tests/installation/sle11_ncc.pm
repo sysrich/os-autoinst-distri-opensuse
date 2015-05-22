@@ -31,6 +31,23 @@ sub run(){
     type_string $emailaddr;
     $self->key_round('ncc-input-activationcode', 'tab');
     type_string $ncc_code;
+
+    if (get_var("ADDONS")) {
+        foreach $a (split(/,/, get_var("ADDONS"))) {
+            next if ($a =~ /sdk/);
+            if ($a eq 'ha') {
+                my $hacode = get_var("NCC_HA_CODE");
+                $self->key_round('ncc-input-hacode', 'tab');
+                type_string $hacode;
+            }
+            if ($a eq 'geo') {
+                my $geocode = get_var("NCC_GEO_CODE");
+                $self->key_round('ncc-input-geocode', 'tab');
+                type_string $geocode;
+            }
+        }
+    }
+ 
     $self->key_round('ncc-submit', 'tab');
     send_key 'ret';
 
