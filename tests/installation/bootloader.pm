@@ -79,32 +79,11 @@ sub run() {
     if ( get_var("NETBOOT") ) {
         send_key "f4";
         assert_screen "inst-instsourcemenu", 4;
-
-        # Select a source of net installation for sle11
-        if ( check_var('DISTRI', "sle")) {
-            my $version = $1 if ( get_var("VERSION") =~ /^(\d+)/ );
-            if ($version == 11) {
-                if ( check_var('INSTALL_SOURCE', "http") ) {
-                    select_source("down", 2);
-                    assert_screen "inst-instsourcedialog", 4;
-                } elsif ( check_var('INSTALL_SOURCE', "ftp") ) {
-                    select_source("down", 1);
-                    assert_screen "inst-instsourcedialog", 4;
-                } elsif ( check_var('INSTALL_SOURCE', "nfs") ) {
-                    select_source("down", 3);
-                    assert_screen "inst-instsourcedialog", 4;
-                } elsif ( check_var('INSTALL_SOURCE', "smb") ) {
-                    select_source("down", 4);
-                    assert_screen "inst-instsourcedialog", 4;
-                }
-            } elsif ($version == 12) {
-                # Todo
-            }  
-        } else {
-            # for opensuse NET
-            send_key "ret";
-            assert_screen "inst-instsourcedialog", 4;
-        }
+        
+        # Select a source (http, ftp, nfs, smb) of net installation
+        $self->key_round('inst-instsourcemenu-' . get_var('INSTALL_SOURCE'), 'down');
+        send_key "ret";
+        assert_screen "inst-instsourcedialog-" . get_var('INSTALL_SOURCE'), 4;
 
         my $mirroraddr = "";
         my $mirrorpath = "/factory";
