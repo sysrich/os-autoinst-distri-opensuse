@@ -94,7 +94,7 @@ sub run() {
         #download.opensuse.org
         if ($mirroraddr) {
             for ( 1 .. 22 ) { send_key "backspace" }
-            type_string $mirroraddr;
+            type_string $mirroraddr, 4;
         }
         send_key "tab";
 
@@ -119,7 +119,7 @@ sub run() {
         if ( check_var('INSTALL_SOURCE', "nfs") && get_var("DIR_PREFIX") ) {
             $mirrorpath = get_var("DIR_PREFIX").$mirrorpath;
         }
-        type_string $mirrorpath;
+        type_string $mirrorpath, 4;
 
         assert_screen "inst-mirror_is_setup", 2;
         send_key "ret";
