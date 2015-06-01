@@ -606,7 +606,7 @@ sub load_autoyast_tests(){
 }
 
 sub load_ncc_tests() {
-    loadtest("ncc/ncc_checkrepos.pm");
+    loadtest("sle11_ncc/ncc_checkrepos.pm");
 }
 
 # load the tests in the right order
