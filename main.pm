@@ -609,6 +609,15 @@ sub load_ncc_tests() {
     loadtest("sle11_ncc/ncc_checkrepos.pm");
 }
 
+sub load_sle11_online_migration_tests() {
+    loadtest("sle11_online_migration/boot_to_console.pm");
+    loadtest("sle11_online_migration/add_beta_repos.pm");
+    loadtest("sle11_online_migration/yast2_online_update.pm");
+    loadtest("sle11_online_migration/yast2_wagon.pm");
+    loadtest("sle11_online_migration/reboot_to_console.pm");
+    loadtest("sle11_online_migration/check_upload_repos.pm");
+}
+
 # load the tests in the right order
 if ( get_var("REGRESSION") ) {
     if ( get_var("KEEPHDDS") ) {
@@ -643,6 +652,9 @@ elsif (get_var("RESCUESYSTEM")) {
 }
 elsif (get_var("SUPPORT_SERVER")) {
     loadtest "support_server/boot/boot.pm";
+}
+elsif (get_var("ONLINE_MIGRATION")) {
+    load_sle11_online_migration_tests();
 }
 else {
     load_boot_tests();
