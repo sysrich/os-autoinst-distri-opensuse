@@ -79,8 +79,12 @@ sub run() {
     if ( get_var("NETBOOT") ) {
         send_key "f4";
         assert_screen "inst-instsourcemenu", 4;
+        
+        # Select a source (http, ftp, nfs, smb) of net installation
+        $self->key_round('inst-instsourcemenu-' . get_var('INSTALL_SOURCE'), 'down');
         send_key "ret";
-        assert_screen "inst-instsourcedialog", 4;
+        assert_screen "inst-instsourcedialog-" . get_var('INSTALL_SOURCE'), 4;
+
         my $mirroraddr = "";
         my $mirrorpath = "/factory";
         if ( get_var("SUSEMIRROR", '') =~ m{^([a-zA-Z0-9.-]*)(/.*)$} ){
@@ -90,9 +94,16 @@ sub run() {
         #download.opensuse.org
         if ($mirroraddr) {
             for ( 1 .. 22 ) { send_key "backspace" }
-            type_string $mirroraddr;
+            type_string $mirroraddr, 4;
         }
         send_key "tab";
+
+        # smb share dir
+        if ( check_var('INSTALL_SOURCE', "smb") ) {
+            for ( 1 .. 10 ) { send_key "backspace" }
+            type_string  get_var("SHARE_NAME");
+            send_key "tab";
+        }
 
         # change dir
         # leave /repo/oss/ (10 chars)
@@ -103,7 +114,12 @@ sub run() {
             for ( 1 .. 10 ) { send_key "left"; }
         }
         for ( 1 .. 22 ) { send_key "backspace"; }
-        type_string $mirrorpath;
+
+        # nfs directory prefix
+        if ( check_var('INSTALL_SOURCE', "nfs") && get_var("DIR_PREFIX") ) {
+            $mirrorpath = get_var("DIR_PREFIX").$mirrorpath;
+        }
+        type_string $mirrorpath, 4;
 
         assert_screen "inst-mirror_is_setup", 2;
         send_key "ret";
@@ -230,6 +246,14 @@ sub run() {
 
 
     # boot
+    send_key "ret";
+}
+
+sub select_source ($$) {
+    my ($direction, $n) = @_;
+    for (1 .. $n) {
+        send_key $direction;
+    }
     send_key "ret";
 }
 
