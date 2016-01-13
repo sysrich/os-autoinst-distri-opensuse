@@ -403,7 +403,7 @@ sub load_inst_tests() {
         loadtest "installation/installation_overview.pm";
         loadtest "installation/start_install.pm";
     }
-    loadtest "installation/livecdreboot.pm";
+    loadtest "installation/reboot_after_install.pm";
 }
 
 sub load_reboot_tests() {

@@ -7,14 +7,55 @@
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
-
-use base "installbasetest";
+use strict;
+use base "y2logsstep";
 use testapi;
+use bmwqemu ();
 
 sub run() {
     my $self = shift;
+    # NET isos are slow to install
+    my $timeout = 2000;
 
-    assert_screen "reboot_after_install", 200;
+    # workaround for yast popups
+    my @tags = qw/rebootnow/;
+    if (get_var("UPGRADE")) {
+        push(@tags, "ERROR-removing-package");
+        $timeout = 5500;    # upgrades are slower
+    }
+    while (1) {
+        my $ret = assert_screen \@tags, $timeout;
+
+        if ($ret->{needle}->has_tag("popup-warning")) {
+            record_soft_failure;
+            bmwqemu::diag "warning popup caused dent";
+            send_key "ret";
+            pop @tags;
+            next;
+        }
+        # can happen multiple times
+        if ($ret->{needle}->has_tag("ERROR-removing-package")) {
+            record_soft_failure;
+            send_key 'alt-d';
+            assert_screen 'ERROR-removing-package-details';
+            send_key 'alt-i';
+            assert_screen 'ERROR-removing-package-warning';
+            send_key 'alt-o';
+            next;
+        }
+        last;
+    }
+    send_key 'alt-s';    # Stop the reboot countdown
+    select_console 'install-shell';
+
+    $self->get_ip_address();
+    $self->save_upload_y2logs();
+
+    select_console 'installation';
+    assert_screen 'rebootnow';
+    # LiveCD needs confirmation for reboot
+    if   (get_var("LIVECD")) { send_key $cmd{"rebootnow"}; }
+    else                     { send_key 'alt-o'; }
 }
 
 1;

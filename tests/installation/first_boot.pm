@@ -11,9 +11,34 @@
 use strict;
 use base "y2logsstep";
 use testapi;
+use Time::HiRes qw(sleep);
 
 sub run() {
     my $self = shift;
+       # 		***** GRUB PHASE ******
+       #See EOF, for def of little funct. Workaround needed for grub2 timeout
+       moveup_and_down();
+       assert_screen "grub2", 30;
+       # this hack needed to stop surely the timeout, with previous function. 
+       # i tested, without this send_key sometimes test fails.
+       send_key 'esc'; 	
+	
+	if (get_var("BOOT_TO_SNAPSHOT")) {
+            send_key_until_needlematch("boot-menu-snapshot", 'down', 10, 10);
+            send_key 'ret';
+            assert_screen("boot-menu-snapshot-list");
+            send_key 'ret';
+            assert_screen("boot-menu-snapshot-bootmenu");
+            send_key 'down', 1;
+            save_screenshot;
+        }
+      if (get_var("XEN")) {
+            send_key_until_needlematch("bootmenu-xen-kernel", 'down', 10, 10);
+        }
+      # if BOOT_TO_SNAPSHOT and XEN VARIABLE NOT SET, we press ret and boot normally
+      send_key "ret";
+
+    # 	      ****** after booting, machine on the Terminal-LOGIN PHASE ******
 
     if (check_var('DESKTOP', 'textmode')) {
         assert_screen 'linux-login', 200;
@@ -87,8 +112,15 @@ sub test_flags() {
 
 sub post_fail_hook() {
     my $self = shift;
-
     $self->export_logs();
+}
+
+
+sub moveup_and_down {
+      for (my $i=0; $i <=10; $i++) {
+       send_key 'down';
+       send_key 'up';
+     }
 }
 
 1;
