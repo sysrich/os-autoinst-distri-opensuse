@@ -64,10 +64,6 @@ sub run() {
         }
         $out = wait_serial($migration_checks, $timeout);
     }
-    script_run("systemctl reboot", 0);
-    
-    # sometimes reboot takes longer time after online migration, give more time
-    wait_boot(bootloader_time => 300, textmode => !is_desktop_installed);
 }
 
 sub test_flags() {
